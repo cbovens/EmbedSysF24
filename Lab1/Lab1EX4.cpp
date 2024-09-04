@@ -15,7 +15,7 @@
 //Specific a certain rotation angle (0-180) for the servo
 void servoWrite(int pin, int angle){ 
     long time = 0;
-    time = /* map the desired angle to time*/
+    time = SERVO_MIN_MS + 10*(angle/(SERVO_MAX_ANGLE/2)); /* map the desired angle to time*/
     softPwmWrite(pin,time);   
 }
 
@@ -28,10 +28,12 @@ int main(void)
 
         /*make servo rotate from minimum angle to maximum, use the function 
         servoWrite(int pin, int angle), increase 1 degree each time*/
+        servoWrite(servoPin, SERVO_MAX_ANGLE);
         delay(500);
 
         /*make servo rotate from maximum angle to minimum, use the function 
         servoWrite(int pin, int angle), increase 1 degree each time*/
+        servoWrite(servoPin, SERVO_MIN_ANGLE);
         delay(500);
     }
     return 0;

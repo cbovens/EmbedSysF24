@@ -1,5 +1,6 @@
 // g++ -std=c++11 -o Lab1EX5 Lab1EX5.cpp -lwiringPi
-
+// Evelyn Wilson and Collin Bovenschen
+// Lab 1 Exercise 5
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdio.h>
@@ -14,29 +15,34 @@
 #include <iomanip>
 #include <unistd.h>
 
-
+#define buttonPin 4
 #define SERVO_MIN_MS 5
 #define SERVO_MAX_MS 25
 #define SERVO_MIN_ANGLE 0
 #define SERVO_MAX_ANGLE 180
 using namespace std;
 
+int adcVal(); //was int originally??
+int angM;
+int countClockula;
 /* signal pin of the servo*/
-#define servoPin    
+#define servoPin 1 // GPIO18
 
 //Specific a certain rotation angle (0-180) for the servo
 void servoWrite(int pin, int angle){ 
     long time = 0;
-    time = /* map the desired angle to time*/
+    time = SERVO_MIN_MS + 10*(angle/(SERVO_MAX_ANGLE/2)); /* map the desired angle to time*/
     softPwmWrite(pin,time);   
 }
 
 
-/* Sefind your callback function to handout the pressing button interrupts. */
+/* Define your callback function to handout the pressing button interrupts. */
 void press_button()
 {
-
-
+    //if currState = 0
+	    //countClockula to 1
+    //else
+	    // countClockula to 0
 }
 
 
@@ -44,24 +50,22 @@ void press_button()
 
 int main(void)
 {
-
-    wiringPiSetup();    
-    softPwmCreate(servoPin,  0, 200);
-
+    wiringPiSetup();
     /* Use wiringPiISR() to setup your interrupts. Refer to document WiringPi_ Interrupts.pdf. */
-
-
-
-
+    wiringPiISR(buttonPin, INT_EDGE_RISING, &press_button);
+    softPwmCreate(servoPin,  0, 200);
+    
     while(1){
 
         /* read ADS1015 value */
-
+	//cout << adcVal()<<endl;
+	
         /* convert the obtained ADS1015 value to angle 0 - 180*/
-
-
+	angM = int(180*(1.0*adcVal() / 1613)); //convert max 6.144 to angles
+	cout << angM <<endl;
         /* use the angle to control the servo motor*/
-
+	// if servoPin = 1, angle stays the same
+	// if servoPin = 0, 180 - angle
 
         usleep(100000);
 
@@ -76,10 +80,10 @@ int adcVal(){
 	// Refer to the supplemental documents to find the parameters. In this lab, the ADS1015
 	// needs to be set in single conversion, single-end mode, FSR (full-scale range)is 6.144, you can choose 
 	// any input pin (A0, A1, A2, A3) you like.
-	adc = wiringPiI2CSetup(/*Address of ADS1015(HEX)*/);
-	wiringPiI2CWriteReg16(adc, /*Configuration Register address pointer(HEX)*/, /*Configuration Register*/);
+	int adc = wiringPiI2CSetup(0x48);	//double right?? Or int???
+	wiringPiI2CWriteReg16(adc, 0x01, 0xC5C1); //check codes!!!
 	usleep(1000);
-    uint16_t data = wiringPiI2CReadReg16(adc, /*Conversion Register address pointer(HEX)*/);
+    uint16_t data = wiringPiI2CReadReg16(adc, 0x00);
 
 
     low = (data & 0xFF00) >> 8;
