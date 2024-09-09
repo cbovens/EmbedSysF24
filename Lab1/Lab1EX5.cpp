@@ -24,14 +24,14 @@ using namespace std;
 
 int adcVal(); //was int originally??
 int angM;
-int countClockula;
+bool countClockula = true;
 /* signal pin of the servo*/
 #define servoPin 1 // GPIO18
 
 //Specific a certain rotation angle (0-180) for the servo
 void servoWrite(int pin, int angle){ 
     long time = 0;
-    time = SERVO_MIN_MS + 10*(angle/(SERVO_MAX_ANGLE/2)); /* map the desired angle to time*/
+    time = SERVO_MIN_MS + (int)10*((float)angle/(SERVO_MAX_ANGLE/2)); /* map the desired angle to time*/
     softPwmWrite(pin,time);   
 }
 
@@ -39,10 +39,7 @@ void servoWrite(int pin, int angle){
 /* Define your callback function to handout the pressing button interrupts. */
 void press_button()
 {
-    //if currState = 0
-	    //countClockula to 1
-    //else
-	    // countClockula to 0
+    countClockula = !countClockula;
 }
 
 
@@ -63,9 +60,12 @@ int main(void)
         /* convert the obtained ADS1015 value to angle 0 - 180*/
 	angM = int(180*(1.0*adcVal() / 1613)); //convert max 6.144 to angles
 	cout << angM <<endl;
+    if(countClockula) {
+        servoWrite(servoPin, angM);
+    } else {
+        servoWrite(servoPin, 180 - angM);
+    }
         /* use the angle to control the servo motor*/
-	// if servoPin = 1, angle stays the same
-	// if servoPin = 0, 180 - angle
 
         usleep(100000);
 
