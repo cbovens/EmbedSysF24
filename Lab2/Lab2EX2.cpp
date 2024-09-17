@@ -43,9 +43,9 @@ double tInMax = 18500;
 /*set your pin numbers and pid values*/
 int motor_pin = fanPin;
 int sonar_pin = sonarPin;
-float kp = 0;
-float ki = 0;
-float kd = 0;
+float kp = 0; //try 20
+float ki = 0; //try 5
+float kd = 0; //try 10
 
 int main()
 {
@@ -57,8 +57,7 @@ int main()
 
 		// This part is to set a system timer, the function "sigroutine" will be triggered
 		// every time_inter_ms milliseconds.
-		struct itimerval value,
-		ovalue;
+	struct itimerval value, ovalue;
 	signal(SIGALRM, sigroutine);
 	value.it_value.tv_sec = 0;
 	value.it_value.tv_usec = time_inter_ms * 1000;
@@ -92,17 +91,18 @@ void PID(float kp, float ki, float kd)
 	/*read the measured position/distance of the ball*/
 	measured_value = adcVal(); // Change adcVal to a distance!
 	/*calculate the distance error between the obj and measured distance */
-
+		distance_error = (obj_value - measured_value) / (float)100.0; //changed to meters
 	// distance_error = objDist - measured_value; Evelyn wrote this maybe?
 	/*calculate the proportional, integral and derivative output */
-	PID_p = measured_value - obj_value;
-	PID_i += PID_p * time_inter_ms;					  // make sure time_inter_ms is elapsedTime
-	PID_d = distance_error - distance_previous_error; // How do I get last error???
+	PID_p = distance_error;
+	PID_i += PID_p * (time_inter_ms / (float)1000.0);					  // make sure time_inter_ms is elapsedTime
+	PID_d = (distance_error - distance_previous_error) / (time_inter_ms / (float)1000.0); // How do I get last error???
 	PID_total = kp * PID_p + kd * PID_d + ki * PID_i;
 
 	/*assign distance_error to distance_previous_error*/
-	distance_previous_error = distance_error
+	distance_previous_error = distance_error;
 	/*use PID_total to control your fan*/
+	pwnWrite(fanPin, (int)PID_total);
 }
 
 /* use a sonar sensor to measure the position of the Ping-Pong ball. you may reuse
@@ -129,7 +129,7 @@ float read_sonar()
 
 	// 1. define a varable to get the current time t1. Refer to "High_Resolution_Clock_Reference.pdf" for more information
 	t1 = high_resolution_clock::now();
-	while (digitalRead(1))
+	while (digitalRead(sonarPin))
 	{
 		// 2. define a varable to get the current time t2.
 		t2 = high_resolution_clock::now();
@@ -157,8 +157,8 @@ float read_sonar()
 can change the objective distance. you may reuse your code in Lab 1.*/
 float read_potentiometer()
 {
-	float objPos = ((adcVal() / 1613) * 80.0) + 10.0;
-	return objPos;
+	float objPos = ((adcVal() / 1613) * 80.0) + 10.0; //1613 - max dc	80 - Max - min vals		
+	return objPos; //in cm
 }
 
 int adcVal()
