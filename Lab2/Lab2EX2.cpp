@@ -157,7 +157,7 @@ float read_sonar()
 can change the objective distance. you may reuse your code in Lab 1.*/
 float read_potentiometer()
 {
-	float objPos = ((adcVal() / 1613) * 80.0) + 10.0; //1613 - max dc	80 - Max - min vals		
+	float objPos = ((adcVal() / 1613) * 80.0) + 10.0; //1613 - max dc	80 - Max - min vals,	10 - min val
 	return objPos; //in cm
 }
 
