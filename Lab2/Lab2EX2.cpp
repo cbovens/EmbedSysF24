@@ -1,4 +1,4 @@
-// Use g++ -std=c++11 -o Lab3EX2 Lab3EX2.cpp -lwiringPi
+// Use g++ -std=c++11 -o Lab2EX2 Lab2EX2.cpp -lwiringPi
 
 #include <iostream>
 #include <iomanip>
@@ -20,7 +20,7 @@ using namespace std;
 void sigroutine(int);
 int adcVal();
 void PID(float, float, float);
-float read_potentionmeter();
+float read_potentiometer();
 float read_sonar();
 
 #define sonarPin 1 // Sonar
@@ -29,8 +29,8 @@ float read_sonar();
 #define fanPin 26  // fan
 
 // variables
-float distance_previous_error, distance_error = 0;
-float obj_value, measured_value; // potentionmeter reading, sonar reading
+float distance_previous_error, distance_error, cumError, rateError = 0;
+float obj_value, measured_value; // potentiometer reading, sonar reading
 int adc;
 float PID_p, PID_d, PID_total, PID_i = 0;
 int time_inter_ms = 23; // time interval, you can use different time interval
@@ -43,9 +43,9 @@ double tInMax = 18500;
 /*set your pin numbers and pid values*/
 int motor_pin = fanPin;
 int sonar_pin = sonarPin;
-float kp = 0; //try 20
-float ki = 0; //try 5
-float kd = 0; //try 10
+float kp = 20;	 // try 20
+float ki = .001; // try 5
+float kd = 10;	 // try 10
 
 int main()
 {
@@ -53,10 +53,10 @@ int main()
 	adc = wiringPiI2CSetup(0x48);
 
 	/*Set the pinMode (fan pin)*/
-	pinMode(fanPin, OUTPUT)
+	pinMode(fanPin, PWM_OUTPUT);
 
-		// This part is to set a system timer, the function "sigroutine" will be triggered
-		// every time_inter_ms milliseconds.
+	// This part is to set a system timer, the function "sigroutine" will be triggered
+	// every time_inter_ms milliseconds.
 	struct itimerval value, ovalue;
 	signal(SIGALRM, sigroutine);
 	value.it_value.tv_sec = 0;
@@ -72,7 +72,7 @@ int main()
 		cout << "PID_i: " << PID_i << endl;
 		cout << "PID_d: " << PID_d << endl;
 		cout << "PID_total: " << PID_total << endl;
-		delay(20);
+		usleep(100000);
 	}
 }
 
@@ -89,20 +89,26 @@ void PID(float kp, float ki, float kd)
 	/*read the objective position/distance of the ball*/
 	obj_value = read_potentiometer();
 	/*read the measured position/distance of the ball*/
-	measured_value = adcVal(); // Change adcVal to a distance!
-	/*calculate the distance error between the obj and measured distance */
-		distance_error = (obj_value - measured_value) / (float)100.0; //changed to meters
+	measured_value = read_sonar();							// Change adcVal to a distance!
+															/*calculate the distance error between the obj and measured distance */
+	distance_error = (obj_value - measured_value) / 100.0f; // changed to meters
+	cumError += (distance_error * (time_inter_ms / 1000.0f));
+	rateError = (distance_error - distance_previous_error) / (time_inter_ms / 1000.0f);
 	// distance_error = objDist - measured_value; Evelyn wrote this maybe?
 	/*calculate the proportional, integral and derivative output */
-	PID_p = distance_error;
-	PID_i += PID_p * (time_inter_ms / (float)1000.0);					  // make sure time_inter_ms is elapsedTime
-	PID_d = (distance_error - distance_previous_error) / (time_inter_ms / (float)1000.0); // How do I get last error???
-	PID_total = kp * PID_p + kd * PID_d + ki * PID_i;
+
+	PID_p = kp * distance_error;
+	PID_i = ki * cumError;	// make sure time_inter_ms is elapsedTime
+	PID_d = kd * rateError; // How do I get last error???
+	PID_total = PID_p + PID_d + PID_i;
+
+	// cout << "P float:" << PID_total << endl;
 
 	/*assign distance_error to distance_previous_error*/
 	distance_previous_error = distance_error;
 	/*use PID_total to control your fan*/
-	pwnWrite(fanPin, (int)PID_total);
+	pwmWrite(fanPin, (int)PID_total);
+	// pwmWrite(fanPin, (int)1000);
 }
 
 /* use a sonar sensor to measure the position of the Ping-Pong ball. you may reuse
@@ -143,22 +149,20 @@ float read_sonar()
 	}
 
 	/*Calculate the distance by using the time duration that you just obtained.*/ // Speed of sound is 340m/s
-	double distancecm = (340.0 * pulseWidth * 0.0001) / 2.0;
+	float distancecm = (340.0 * pulseWidth * 0.0001) / 2.0;
 
-	/*Print the distance.*/
-
-	cout << distancecm << endl;
+	// cout << distancecm << endl;
+	return distancecm;
 
 	/*Delay before next measurement. The actual delay may be a little longer than what is shown is the datasheet.*/
-	usleep(50000);
 }
 
 /* use a potentiometer to set an objective position (10 - 90 cm) of the Ping-Pang ball, varying the potentiometer
 can change the objective distance. you may reuse your code in Lab 1.*/
 float read_potentiometer()
 {
-	float objPos = ((adcVal() / 1613) * 80.0) + 10.0; //1613 - max dc	80 - Max - min vals,	10 - min val
-	return objPos; //in cm
+	float objPos = ((adcVal() / 1613.0f) * 80.0f) + 10.0f; // 1613 - max dc	80 - Max - min vals,	10 - min val
+	return objPos;										   // in cm
 }
 
 int adcVal()
@@ -168,7 +172,6 @@ int adcVal()
 	// Refer to the supplemental documents to find the parameters. In this lab, the ADS1015
 	// needs to be set in single conversion, single-end mode, FSR (full-scale range)is 6.144, you can choose
 	// any input pin (A0, A1, A2, A3) you like.
-	int adc = wiringPiI2CSetup(0x48);
 	wiringPiI2CWriteReg16(adc, 0x01, 0xC5C1);
 	usleep(1000);
 	uint16_t data = wiringPiI2CReadReg16(adc, 0x00);
