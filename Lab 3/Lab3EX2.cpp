@@ -47,7 +47,7 @@ int main()
 		{
 			if (event.isButton())
 			{
-				printf("isButton: %u | Value: %d\n", event.number, event.value);
+				printf("number: %u | Value: %d\n", event.number, event.value);
 				/*Interpret the joystick input and use that input to move the Kobuki*/
 				if (event.number == 6 && event.value == 1)
 				{

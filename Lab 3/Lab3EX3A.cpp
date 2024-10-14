@@ -1,4 +1,5 @@
 // Use g++ -std=c++11 -o Lab3EX3A Lab3EX3A.cpp -lwiringPi
+// Server
 
 #include <iostream>
 #include <iomanip>
@@ -21,6 +22,7 @@ void readData();
 int kobuki, new_socket;
 
 /*Create char buffer to store transmitted data*/
+int data[3] = {0};
 
 int main()
 {
@@ -41,24 +43,35 @@ int main()
 
 void movement(int sp, int r)
 {
-	// Create the byte stream packet with the following format:
-	/*Byte 0: Kobuki Header 0*/
-	/*Byte 1: Kobuki Header 1*/
-	/*Byte 2: Length of Payload*/
-	/*Byte 3: Payload Header*/
-	/*Byte 4: Payload Data: Length*/
-	/*Byte 5: Payload Data: Speed(mm/s)*/
-	/*Byte 6: Payload Data: Speed(mm/s)*/
-	/*Byte 7: Payload Data: Radius(mm)*/
-	/*Byte 8: Payload Data: Radius(mm)*/
-	/*Byte 9: Checksum*/
 
-	/*Send the data to the Kobuki over a serial stream*/
+	// Create the byte stream packet with the following format:
+	unsigned char b_0 = 0xAA; /*Byte 0: Kobuki Header 0*/
+	unsigned char b_1 = 0x55; /*Byte 1: Kobuki Header 1*/
+	unsigned char b_2 = 0x06; /*Byte 2: Length of Payload*/
+	unsigned char b_3 = 0x01; /*Byte 3: Sub-Payload Header*/
+	unsigned char b_4 = 0x04; /*Byte 4: Length of Sub-Payload*/
+
+	unsigned char b_5 = sp & 0xff;		  // Byte 5: Payload Data: Speed(mm/s)
+	unsigned char b_6 = (sp >> 8) & 0xff; // Byte 6: Payload Data: Speed(mm/s)
+	unsigned char b_7 = r & 0xff;		  // Byte 7: Payload Data: Radius(mm)
+	unsigned char b_8 = (r >> 8) & 0xff;  // Byte 8: Payload Data: Radius(mm)
+	unsigned char checksum = 0;			  // Byte 9: Checksum
 
 	/*Checksum all the data and send that as well*/
+	char packet[] = {b_0, b_1, b_2, b_3, b_4, b_5, b_6, b_7, b_8};
+	for (unsigned int i = 2; i < 9; i++)
+		checksum ^= packet[i];
+
+	/*Send the data to the Kobuki over a serial stream*/
+	for (int i = 0; i < 9; i++)
+	{
+		serialPutchar(kobuki, packet[i]);
+	}
+	// serialPutchar(kobuki, checksum);
 
 	/*Pause the script so the data send rate is the
 	same as the Kobuki receive rate*/
+	delay(20);
 }
 
 // Creates the connection between the client and
@@ -108,12 +121,12 @@ void createSocket()
 void readData()
 {
 	/*Read the incoming data stream from the controller*/
-
+	read(new_socket, data, 16);
 	/*Print the data to the terminal*/
-
+	printf("Velocity: %d, Radius: %d, Exit: %d\n", data[0], data[1], data[2]);
 	/*Use the received data to control the Kobuki*/
-
-	if (/**/)
+	movement(data[0], data[1]);
+	if (data[2])
 	{
 		/*Closes out of all connections cleanly*/
 
@@ -127,5 +140,5 @@ void readData()
 	}
 
 	/*Reset the buffer*/
-	memset(& /*buffer*/, '0', sizeof(/*buffer*/));
+	memset(&data, '0', sizeof(data));
 }

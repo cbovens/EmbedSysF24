@@ -1,4 +1,5 @@
 // Use g++ joystick.cc -std=c++11 -o Lab3EX3B Lab3EX3B.cpp
+// Client
 
 #include <stdio.h>
 #include <iostream>
@@ -20,7 +21,7 @@ int num = 0;
 int val = 0;
 int sock = 0;
 int isButton = 0;
-int data[3];
+int *data = new int[3];
 
 int main(int argc, char const *argv[])
 {
@@ -41,20 +42,83 @@ int main(int argc, char const *argv[])
 	{
 
 		/*Sample the events from the joystick*/
-		joystick.sample(&event);
-		/*Convert the event to a useable data type so it can be sent*/
-		isButton = event.isButton() ? 1 : 0;
-		num = event.number;
-		val = event.value;
-		data[0] = isButton;
-		data[1] = num;
-		data[2] = val;
+		if (joystick.sample(&event))
+		{
+			/*Convert the event to a useable data type so it can be sent*/
+			// isButton = event.isButton();
+			data[0] = 0;
+			data[1] = 0;
+			data[2] = 0;
+			num = event.number;
+			val = event.value;
 
-		/*Print the data stream to the terminal*/
-		printf("isButton: %u | eventNum: %u | value: %d", data[0], data[1], data[2]);
+			/*Print the data stream to the terminal*/
+
+			if (event.isButton())
+			{
+				printf("Button Press: eventNum: %u | value: %d", event.number, event.value);
+				/*Interpret the joystick input and use that input to move the Kobuki*/
+				if (event.number == 7 && event.value == 1) // Stop program signal
+				{
+					data[2] = 1;
+				}
+				if (event.number == 6 && event.value == 1) // Stop movement signal
+				{
+					data[0] = 0;
+					data[1] = 0;
+					data[2] = 0;
+				}
+			}
+			if (event.isAxis())
+			{
+				printf("Axis Press: isAxis: %u | Value: %d\n", event.number, event.value);
+				if (event.number == 6)
+				{
+					/*Interpret the joystick input and use that input to move the Kobuki*/
+					if (val == 32767)
+					{
+						// move right
+						// movement(120, -1);
+						data[0] = 120;
+						data[1] = -1;
+						data[2] = 0;
+					}
+					else if (val == -32767)
+					{
+						// move left
+						// movement(120, 1);
+						data[0] = 120;
+						data[1] = 1;
+						data[2] = 0;
+					}
+				}
+				else if (event.number == 7)
+				{
+					if (val == -32767)
+					{
+						// move up
+						// movement(radius, 0);
+						data[0] = 500;
+						data[1] = 0;
+						data[2] = 0;
+					}
+					else if (val == 32767)
+					{
+						// move down
+						// movement(-radius, 0);
+						data[0] = -500;
+						data[1] = 0;
+						data[2] = 0;
+					}
+				}
+			}
+			printf("Velocity: %d | Radius: %d | Exit: %d\n", data[0], data[1], data[2]);
+			send(sock, data, 16, 0);
+		}
+
 		/*Send the data to the server*/
-		send(sock, data, , 0);
-		if (/**/)
+
+		if (data[2] == 1)
 		{
 			/*Closes out of all connections cleanly*/
 
@@ -66,6 +130,7 @@ int main(int argc, char const *argv[])
 			exit(0);
 
 			/*Set a delay*/
+			sleep(2);
 		}
 	}
 	return 0;
@@ -90,7 +155,7 @@ int createSocket()
 	serv_addr.sin_port = htons(PORT);
 
 	/*Use the IP address of the server you are connecting to*/
-	if (inet_pton(AF_INET, "XX.XX.XX.XX", &serv_addr.sin_addr) <= 0)
+	if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
 	{ // Will change!!!
 		printf("\nInvalid address/ Address not supported \n");
 		return -1;
