@@ -66,6 +66,8 @@ int main()
 		}
 		/*Use serialFlush(kobuki) to discard all data received, or waiting to be send down the given device.*/
 		usleep(kobukiRate);
+		serialFlush(kobuki);
+		readData();
 	}
 }
 
@@ -100,8 +102,6 @@ void movement(int sp, int r)
 	/*Pause the script so the data send rate is the
 	same as the Kobuki data receive rate*/
 	usleep(kobukiRate);
-	serialFlush(kobuki);
-	readData();
 }
 
 void readData()
