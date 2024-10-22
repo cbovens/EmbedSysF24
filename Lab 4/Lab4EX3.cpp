@@ -18,9 +18,16 @@ unsigned int button;
 unsigned int read;
 
 int defSpeed = 100;
-
+int kobukiRate = 20000;
+int baud = 20;
+int r = 500;
+int bias = 230;
+float packageParam = 1.4f;
 void movement(int, int);
 void readData();
+void reposFunc(bool);
+void rotateFunc(bool);
+void linMoveFunc();
 
 int main()
 {
@@ -37,6 +44,15 @@ int main()
 		the recommended speed is 100mm/s*/
 		if ((cliff < 8) && (bumper < 8))
 		{
+			if (((bumper & 0x01) == 0x01) || ((cliff & 0x01) == 0x01)) { //Cliff & bumper Right w/ bitmask
+				reposFunc(false);
+			}
+			else if (((bumper & 0x02) == 0x02) || ((cliff & 0x02) == 0x02)) { //Cliff & bumper Center w/ bitmask
+				reposFunc(true);
+			}
+			else if (((bumper & 0x04) == 0x04) || ((cliff & 0x04) == 0x04)) { //Cliff & bumper Left w/ bitmask
+				reposFunc(true);
+			}		
 		}
 		/*Create different states as to satisfy the conditions above.
 		Remember, a single press of a bumper may last longer
@@ -49,7 +65,7 @@ int main()
 			serialClose(kobuki);
 		}
 		/*Use serialFlush(kobuki) to discard all data received, or waiting to be send down the given device.*/
-		usleep(20000);
+		usleep(kobukiRate);
 	}
 }
 
@@ -83,7 +99,7 @@ void movement(int sp, int r)
 
 	/*Pause the script so the data send rate is the
 	same as the Kobuki data receive rate*/
-	usleep(20000);
+	usleep(kobukiRate);
 	serialFlush(kobuki);
 	readData();
 }
@@ -193,4 +209,27 @@ void readData()
 
 	cout << "bumper: " << bumper << " drop: " << drop << " cliff: " << cliff << " button: " << button << endl;
 	return (0);
+}
+
+void rotateFunc(bool clockwise) {
+	int turnCond = clockwise ? 1: -1;
+	float turnSpeed = 3.14159f / 2;
+	turnSpeed *= turnCond * packageParam;
+	for (int i = 0; i < (1000 / baud), i++) {
+		movement(turnSpeed, 1);
+	}
+	movement(0,0);
+}
+
+void linMoveFunc() {
+	int linMoveSpeed = (int)(-1 * defSpeed * packageParam);
+		for (int i = 0; i < 500 / baud; i++) {
+		movement(linMoveSpeed, 0);
+		}
+	movement(0,0);
+}
+
+void reposFunc(bool clockwise) {
+	linMoveFunc();
+	rotateFunc(clockwise);
 }
