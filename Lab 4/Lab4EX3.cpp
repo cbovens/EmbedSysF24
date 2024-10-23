@@ -15,7 +15,7 @@ unsigned int bumper;
 unsigned int drop;
 unsigned int cliff;
 unsigned int button;
-unsigned int read;
+//unsigned int read;
 
 int defSpeed = 100;
 int kobukiRate = 20000;
@@ -37,13 +37,33 @@ int main()
 
 	while (serialDataAvail(kobuki) != -1)
 	{
+		
+		readData();
 		/*Read the initial data. If there are no flags,
-		the default condition is forward.*/
-		movement(defSpeed, 0);
-		/*Move slowly to give the sensors enough time to read data,
+		the default condition is forward.
+		if(cliff == 0 && bumper == 0 && drop == 0){
+			movement(defSpeed, 0);
+		} else {
+
+			// Move to the right, away from the wall or edge
+			if(bumper >= 4 || cliff >= 4 || drop == 2){
+				linMoveFunc(); // Move backwards
+				rotateFunc(true);
+			} 
+			// Move to the left, away from the wall or edge
+			else if(bumper >= 1 || cliff == 1 || drop == 1){
+				linMoveFunc(); // Move backwards
+				rotateFunc(false);
+			}
+		
+		} */
+		/*Move slowly to give the sensors eno
+		ugh time to read data,
 		the recommended speed is 100mm/s*/
-		if ((cliff < 8) && (bumper < 8))
-		{
+		if(bumper == 0 && drop == 0 && cliff == 0){
+			movement(defSpeed, 0);
+		}
+		else {
 			if (((bumper & 0x01) == 0x01) || ((cliff & 0x01) == 0x01)) { //Cliff & bumper Right w/ bitmask
 				reposFunc(false);
 			}
@@ -67,7 +87,7 @@ int main()
 		/*Use serialFlush(kobuki) to discard all data received, or waiting to be send down the given device.*/
 		usleep(kobukiRate);
 		serialFlush(kobuki);
-		readData();
+		
 	}
 }
 
@@ -109,10 +129,6 @@ void readData()
 	// you can reuse your code from EXE1, Lab 4
 	wiringPiSetup();
 	kobuki = serialOpen("/dev/kobuki", 115200);
-	unsigned int bumper;
-	unsigned int drop;
-	unsigned int cliff;
-	unsigned int button;
 	unsigned int read;
 	unsigned int left1;
 	unsigned int left2;
@@ -138,59 +154,10 @@ void readData()
 	/*Read the bytes containing the bumper, wheel drop,
 		and cliff sensors. You can convert them into a usable data type.*/
 	bumper = serialGetchar(kobuki);
-	/* if (bumper >= 4)
-   {
-	   cout << "Left bumper ";
-	   bumper -= 4;
-   }
-   if (bumper >= 2)
-   {
-	   cout << "Central bumper ";
-	   bumper -= 2;
-   }
-   if (bumper == 1)
-   {
-	   cout << "Right bumper ";
-	   bumper -= 1;
-   } */
 
 	drop = serialGetchar(kobuki);
-	/* if (drop == 3)
-	{
-		cout << "Right and left wheel off ";
-	}
-	else if (drop == 2)
-	{
-		cout << "Left wheel off ";
-	}
-	else if (drop == 1)
-	{
-		cout << "Right wheel off ";
-	} */
 
 	cliff = serialGetchar(kobuki);
-	/*if (cliff >= 4)
-	{
-		cout << "Left cliff ";
-		cliff -= 4;
-	}
-	if (cliff >= 2)
-	{
-		cout << "Central cliff ";
-		cliff -= 2;
-	}
-	if (cliff == 1)
-	{
-		cout << "Right cliff ";
-		cliff -= 1;
-	}
-	cout << endl;
-	*/
-	/*Print the data to the screen.*/
-	// printf("Bumper: %d, Drop: %d, Cliff: %d\n", bumper, drop, cliff);
-
-	/*Read through 6 bytes between the cliff sensors and
-	the button sensors.*/
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -208,24 +175,23 @@ void readData()
 	}
 
 	cout << "bumper: " << bumper << " drop: " << drop << " cliff: " << cliff << " button: " << button << endl;
-	return (0);
 }
 
 void rotateFunc(bool clockwise) {
 	int turnCond = clockwise ? 1: -1;
 	float turnSpeed = 3.14159f / 2;
-	turnSpeed *= turnCond * packageParam;
-	for (int i = 0; i < (1000 / baud), i++) {
-		movement(turnSpeed, 1);
-	}
+	turnSpeed *= turnCond;
+	cout << "rotating" << endl;
+	movement(defSpeed, clockwise ? -1 : 1);
+	usleep(2500000);
 	movement(0,0);
 }
 
 void linMoveFunc() {
 	int linMoveSpeed = (int)(-1 * defSpeed * packageParam);
-		for (int i = 0; i < 500 / baud; i++) {
+	for (int i = 0; i < 500 / baud; i++) {
 		movement(linMoveSpeed, 0);
-		}
+	}
 	movement(0,0);
 }
 
