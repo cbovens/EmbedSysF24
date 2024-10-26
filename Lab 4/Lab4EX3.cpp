@@ -39,27 +39,12 @@ int main()
 	{
 		
 		readData();
-		/*Read the initial data. If there are no flags,
-		the default condition is forward.
-		if(cliff == 0 && bumper == 0 && drop == 0){
-			movement(defSpeed, 0);
-		} else {
 
-			// Move to the right, away from the wall or edge
-			if(bumper >= 4 || cliff >= 4 || drop == 2){
-				linMoveFunc(); // Move backwards
-				rotateFunc(true);
-			} 
-			// Move to the left, away from the wall or edge
-			else if(bumper >= 1 || cliff == 1 || drop == 1){
-				linMoveFunc(); // Move backwards
-				rotateFunc(false);
-			}
-		
-		} */
+		/*Read the initial data. If there are no flags,
 		/*Move slowly to give the sensors eno
 		ugh time to read data,
 		the recommended speed is 100mm/s*/
+		
 		if(bumper == 0 && drop == 0 && cliff == 0){
 			movement(defSpeed, 0);
 		}
