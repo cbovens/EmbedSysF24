@@ -1,23 +1,34 @@
 <html>
 	<head>
-		ECEN4213 IoT
+		<title>ECEN4213IoT</title>
 	</head>
 
 
 	<body>
-		A Light Bulb
+		<center><h1>A Light Bulb</h1></center>
 
 		<!-- finsh the src attribute. To adjust the size of the image, you can modify  width="300px" height="400px" -->
-		<center><img id='myimage' alt='write something' width="300px" height="400px" src="../static/img name"></center>
+		<center><img id='myimage' alt='write something' width="300px" height="400px" src="../static/pic_bulboff.png"></center>
 		
 		<!-- to modify the position and size of the buttons, you can modify  style="position:relative;top:5%;left:30%" 
 		and style="font-size:30;height:100px; width:200px;" -->
 		<div  style="position:relative;top:5%;left:36%">
-	      <input style="font-size:30;height:100px; width:200px;" type = "button" id = "turn_on" value = "None" />
-	      <input style="font-size:30;height:100px; width:200px;" type = "button" id = "turn_off" value = "None" />
+	      <input style="font-size:30;height:100px; width:200px;" type = "button" id = "turn_on" value = "On" />
+	      <input style="font-size:30;height:100px; width:200px;" type = "button" id = "turn_off" value = "Off" />
     	</div>
 
+		<script type="text/javascript">
+			function turnOn() {
+				document.getElementById("myimage").src = "../static/pic_bulbon.png";
+			}
 
+			function turnOff() {
+				document.getElementById("myimage").src = "../static/pic_bulboff.png";
+			}
+
+			document.getElementById("turn_on").addEventListener("click", turnOn);
+			document.getElementById("turn_off").addEventListener("click", turnOff);
+		</script>
 
 
 	</body>
