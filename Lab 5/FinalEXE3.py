@@ -13,7 +13,7 @@ import socket
 app = Flask(__name__)
 
 
-server_address_1 =  ('127.0.0.2', 8001)
+server_address_1 =  ('127.0.0.2', 8001) #loopback, camera port
 sock_1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock_1.bind(server_address_1)
 
@@ -21,8 +21,8 @@ sock_1.bind(server_address_1)
 #Find the IP Address of your device
 #Use the 'ifconfig' terminal command, the address should be in
 #the format  "XX.XXX.XXX.XXX"
-IP_Address = '10.227.78.134'
-PORT = 8080
+IP_Address = '10.227.78.134' #Pi's address WILL CHANGE!!!
+PORT = 8080 #
 #Connect the *.html page to the server and run as the default page
 
 
@@ -53,6 +53,7 @@ def gen(camera):
     frame = ''
     while True:
         # receive image to the client: frame,_ = .....
+        frame,_ = sock_1.recvfrom(max_len)
 
         yield (b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
@@ -63,16 +64,30 @@ def video_feed():
     return Response(gen(Camera()),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-
+# define four funtions to handle the left, right, down and stop buttons
 @app.route('/UpFunction')
 def UpFunction():
     print('In UpFunction')
     return "Nothing"
 
-# define four funtions to handle the left, right, down and stop buttons
-@app.route('/function_name')
-def function_name():
-    print('In XXFunction')
+@app.route('/DownFunction')
+def DownFunction():
+    print('In DownFunction')
+    return "Nothing"
+
+@app.route('/LeftFunction')
+def LeftFunction():
+    print('In LeftFunction')
+    return "Nothing"
+
+@app.route('/RightFunction')
+def RightFunction():
+    print('In RightFunction')
+    return "Nothing"
+
+@app.route('/StopFunction')
+def StopFunction():
+    print('In StopFunction')
     return "Nothing"
 
 

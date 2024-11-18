@@ -69,6 +69,8 @@ class Camera(object):
 
 camera = Camera()
 #todo: setup the UDP socket.
+server_address = ('127.0.0.2', 8001) #loopback IP w/ camera port
+client = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
 def get_f():
     global camera,connection
@@ -76,6 +78,7 @@ def get_f():
     print(len(image))
     try:
         # send image to the server
+        client.sendto(image, server_address)
         pass
     except:
         print("something happened")
