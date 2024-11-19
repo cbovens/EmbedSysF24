@@ -34,11 +34,17 @@ unsigned int bumper;
 unsigned int drop;
 unsigned int cliff;
 unsigned int button;
+int defSpeed = 100;
+int kobukiRate = 20000;
+int baud = 20;
+int r = 500;
+int bias = 230;
+float packageParam = 1.4f;
 char cmd = 's';
 
 void readData();
-
-
+void rotateFunc(bool);
+void linMoveFunc(int);
 
 void read_socket(){
 	char buffer[100];
@@ -49,10 +55,19 @@ void read_socket(){
 		printf("received: %c\n",cmd);
 
 		// use cmd to control the robot movement
+		switch (cmd){
+			case 'u': linMoveFunc(1); break;
+			case 'd': linMoveFunc(-1); break;
+			case 'r': rotateFunc(false); break;
+			case 'l': rotateFunc(true); break;
+			case 's': movement(0,0); break;
+			default: break;
+		}
+
 
 		
 		//clean the buffer
-		
+		memset(&buffer, '0', sizeof(buffer));
 	}
 	
 }
@@ -170,4 +185,22 @@ void readData(){
 		the same as the Kobuki send rate.*/
 		usleep(20000);
 		
+}
+
+void rotateFunc(bool clockwise) {
+	int turnCond = clockwise ? 1: -1;
+	float turnSpeed = 3.14159f / 2;
+	turnSpeed *= turnCond;
+	cout << "rotating" << endl;
+	movement(defSpeed, turnCond);
+	usleep(2500000);
+	movement(0,0);
+}
+
+void linMoveFunc(int dirParam) {
+	int linMoveSpeed = (int)(defSpeed * packageParam * dirParam); //dirParam, 1 forward, -1 backward!
+	for (int i = 0; i < 500 / baud; i++) {
+		movement(linMoveSpeed, 0);
+	}
+	movement(0,0);
 }

@@ -11,7 +11,7 @@ app = Flask(__name__)
 #Find the IP Address of your device
 #Use the 'ifconfig' terminal command, the address should be in
 #the format  "XX.XXX.XXX.XXX"
-IP_Address = '10.227.78.134'
+IP_Address = '10.227.10.159'
 PORT = 8080
 #Connect the *.html page to the server and run as the default page
 @app.route('/')

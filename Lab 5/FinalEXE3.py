@@ -21,7 +21,7 @@ sock_1.bind(server_address_1)
 #Find the IP Address of your device
 #Use the 'ifconfig' terminal command, the address should be in
 #the format  "XX.XXX.XXX.XXX"
-IP_Address = '10.227.78.134' #Pi's address WILL CHANGE!!!
+IP_Address = '10.227.96.8' #Pi's address WILL CHANGE!!!
 PORT = 8080 #
 #Connect the *.html page to the server and run as the default page
 
@@ -89,9 +89,6 @@ def RightFunction():
 def StopFunction():
     print('In StopFunction')
     return "Nothing"
-
-
-    
 
 #Start the server
 if __name__ == "__main__":
