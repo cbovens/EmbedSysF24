@@ -40,6 +40,12 @@ int baud = 20;
 int r = 500;
 int bias = 230;
 float packageParam = 1.4f;
+int defSpeed = 100;
+int kobukiRate = 20000;
+int baud = 20;
+int r = 500;
+int bias = 230;
+float packageParam = 1.4f;
 char cmd = 's';
 
 void readData();

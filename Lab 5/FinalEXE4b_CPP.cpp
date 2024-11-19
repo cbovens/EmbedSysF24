@@ -34,10 +34,17 @@ unsigned int bumper;
 unsigned int drop;
 unsigned int cliff;
 unsigned int button;
+int defSpeed = 100;
+int kobukiRate = 20000;
+int baud = 20;
+int r = 500;
+int bias = 230;
+float packageParam = 1.4f;
 char cmd = 's';
 
 void readData();
-
+void rotateFunc(bool);
+void linMoveFunc(int);
 
 
 void read_socket(){
@@ -49,10 +56,16 @@ void read_socket(){
 		printf("received: %c\n",cmd);
 
 		// use cmd to control the robot movement
-
-		
+		switch (cmd){
+			case 'u': linMoveFunc(1); break;
+			case 'd': linMoveFunc(-1); break;
+			case 'r': rotateFunc(false); break;
+			case 'l': rotateFunc(true); break;
+			case 's': movement(0,0); break;
+			default: break;
+		}
 		//clean the buffer
-		
+		memset(&buffer, '0', sizeof(buffer));
 	}
 	
 }
@@ -68,15 +81,25 @@ int main(){
 	while(serialDataAvail(kobuki) != -1)
 	{
 		// Read the sensor data.
-
+		readData();
 
 		// Construct an string data like 'b0c0d0', you can use "sprintf" function. You can also define your own data protocal.
+		char inp[7] = "b0c0d0";
+		/*if ((cliff > 0x07) || (bumper  > 0x07) || (drop > 0x07))
+		{
+			bumper = 0;
+			cliff = 0;
+			drop = 0;
+		} */
+		inp[1] = '0' + bumper;
+		inp[3] = '0' + cliff;
+		inp[5] = '0' + drop;
 
 
 		// Send the sensor data through the socket
-
+		send(sock, str, sizeof(str), 0);
 		// Clear the buffer
-
+		memset(&buffer, '0', sizeof(buffer)); //maybe dont need
 		// You can refer to the code in previous labs. 
 	}
 	serialClose(kobuki);
