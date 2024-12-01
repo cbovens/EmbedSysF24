@@ -97,12 +97,12 @@ int main()
 
 		// Construct an string data like 'b0c0d0', you can use "sprintf" function. You can also define your own data protocal.
 		char inp[7] = "b0c0d0";
-		if ((cliff > 0x07) || (bumper > 0x07) || (drop > 0x07))
+		/*if ((cliff > 0x07) || (bumper > 0x07) || (drop > 0x07))
 		{
 			bumper = 0;
 			cliff = 0;
 			drop = 0;
-		}
+		}*/
 		inp[1] = '0' + bumper;
 		inp[3] = '0' + cliff;
 		inp[5] = '0' + drop;
@@ -224,4 +224,22 @@ void readData()
 	/*Pause the script so the data read receive rate is
 	the same as the Kobuki send rate.*/
 	usleep(20000);
+}
+
+void rotateFunc(bool clockwise) {
+	int turnCond = clockwise ? 1: -1;
+	float turnSpeed = 3.14159f / 2;
+	turnSpeed *= turnCond;
+	cout << "rotating" << endl;
+	movement(defSpeed, turnCond);
+	usleep(2500000);
+	movement(0,0);
+}
+
+void linMoveFunc(int dirParam) {
+	int linMoveSpeed = (int)(defSpeed * packageParam * dirParam); //dirParam, 1 forward, -1 backward!
+	for (int i = 0; i < 500 / baud; i++) {
+		movement(linMoveSpeed, 0);
+	}
+	movement(0,0);
 }

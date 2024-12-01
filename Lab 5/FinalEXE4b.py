@@ -28,7 +28,7 @@ connection, address = sock.accept()
 # Find the IP Address of your device
 # Use the 'ifconfig' terminal command, the address should be in
 # the format  "XX.XXX.XXX.XXX"
-IP_Address = '10.227.78.134'  # PI IP!!!
+IP_Address = '10.227.13.216'  # PI IP!!!
 PORT = 8080
 # Connect the *.html page to the server and run as the default page
 
@@ -38,7 +38,7 @@ def index():
     if request.headers.get('accept') == 'text/event-stream':
         def events():
             for i, c in enumerate(itertools.cycle('\|/-')):
-                yield "data: %s\n\n" % (info)
+                yield "data: %s\n\n" % (info) #C-code Kobuki info
         return Response(events(), content_type='text/event-stream')
     return render_template('FinalEXE3.html')
 

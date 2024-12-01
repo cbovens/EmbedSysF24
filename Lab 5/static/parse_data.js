@@ -40,6 +40,15 @@ if (!!window.EventSource) {
         {
           document.getElementById("wheeldroptoggle").value = "Left";
         }
+      if (drop>Number("2"))f ((cliff > 0x07) || (bumper > 0x07) || (drop > 0x07))
+      {
+        bumper = 0;
+        cliff = 0;
+        drop = 0;
+      }
+        {
+          document.getElementById("wheeldroptoggle").value = "Both";
+        }
       
 
       // finish the code to handle cliff status 
